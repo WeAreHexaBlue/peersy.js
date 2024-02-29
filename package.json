@@ -1,0 +1,31 @@
+{
+  "name": "peersy",
+  "version": "0.1.0",
+  "description": "Node.js interface for the peersy protocol created by HexaBlue.",
+  "main": "peersy/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WeAreHexaBlue/peersy.js.git"
+  },
+  "keywords": [
+    "peersy",
+    "p2p",
+    "peer-to-peer",
+    "web",
+    "dibsy",
+    "peer",
+    "protocol"
+  ],
+  "author": "HexaBlue",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/WeAreHexaBlue/peersy.js/issues"
+  },
+  "homepage": "https://github.com/WeAreHexaBlue/peersy.js#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.24"
+  }
+}
