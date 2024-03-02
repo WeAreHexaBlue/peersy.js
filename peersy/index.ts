@@ -1,15 +1,21 @@
 import * as events from "node:events"
 
-var emitter = new events.EventEmitter()
+export var emitter = new events.EventEmitter()
 
-interface Share {
-    sharedAt: Date,
-    sharedBy: Peer[]
+export var latestIDs: {[key: string]: number | null} = {
+    post: null,
+    profile: null,
+    media: null
 }
 
-interface Media {}
+export type Content = Post | Profile | Media // to be expanded
 
-interface Post {
+export interface Media {
+    id: number
+}
+
+export interface Post {
+    id: number
     title?: string,
     content?: string,
     attachments?: Media[],
@@ -17,7 +23,7 @@ interface Post {
     author: User
 }
 
-interface Profile {
+export interface Profile {
     display: string,
     avatar?: Media,
     banner?: Media,
@@ -26,35 +32,9 @@ interface Profile {
     user: User
 }
 
-interface User {
+export interface User {
     username: string
 }
 
-class Peer {
-    user: User
-    origin: string
-    status: string
-
-    constructor(user: User, origin: string) {
-        this.user = user
-        this.origin = origin
-        this.status = "CREATED"
-    }
-
-    connect() {
-        this.status = "CONNECTED"
-        emitter.emit("connect", this.user.username, this.origin, this.status)
-    }
-
-    async send(packet: Packet) {}
-}
-
-class Packet {
-    id: number
-    lastShare: Share
-    createdAt: Date
-    editedAt: Date
-    content: Profile | Post | Media // to expand in the future
-
-    constructor() {}
-}
+export { Peer } from "./peer"
+export { Packet } from "./packet"
