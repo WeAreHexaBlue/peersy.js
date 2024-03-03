@@ -2,10 +2,11 @@ import * as events from "node:events"
 
 export var emitter = new events.EventEmitter()
 
-export var latestIDs: {[key: string]: number | null} = {
-    post: null,
-    profile: null,
-    media: null
+export var latestIDs: {[key: string]: number} = {
+    post: 0,
+    profile: 0,
+    media: 0,
+    packet: 0
 }
 
 export type Content = Post | Profile | Media // to be expanded
