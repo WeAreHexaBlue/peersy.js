@@ -2,25 +2,33 @@ import * as peersy from "./index"
 
 export class Peer {
     user: peersy.User
-    origin: string
-    status: string
-    client: "web" | "linux" | "windows" | "android" | "ios" // not sure if i have to separate Linux/Windows and Android/iOS
+    client: peersy.Platform
+    packets: peersy.Packet[]
 
-    constructor(user: peersy.User, origin: string) {
+    constructor(user: peersy.User, client: peersy.Platform) {
         this.user = user
-        this.origin = origin
-        this.status = "CREATED"
+        this.client = client
+        this.packets = []
+
+        this._findLocalPackets()
 
         peersy.emitter.on("packet", async (packet: peersy.Packet, recipient?: peersy.Peer) => {
             if (recipient && recipient !== this) {return}
 
             await this._getPacket(packet)
         })
+
+        peersy.emitter.on("request", async (content: peersy.Content, requester: peersy.Peer) => {
+            this.packets.forEach(async packet => {
+                if (packet.partOf.id === content.id) {
+                    await this.sendTo(packet, requester)
+                } 
+            })
+        })
     }
 
     connect() {
-        this.status = "CONNECTED"
-        peersy.emitter.emit("connect", this.user.username, this.origin, this.status)
+        peersy.emitter.emit("connect", this.user.username, this.client, this.packets)
     }
 
     async sendTo(packet: peersy.Packet, recipient: peersy.Peer) {
@@ -29,6 +37,20 @@ export class Peer {
 
     async send(packet: peersy.Packet) {
         peersy.emitter.emit("packet", packet)
+    }
+
+    async request(content: peersy.Content) {
+        peersy.emitter.emit("request", content, this)
+    }
+
+    _findLocalPackets() { // to run inside constructor
+        switch (this.client) {
+            case "web":
+                for (let i = 0; i < localStorage.length; i++) {
+                    this.packets.push(localStorage[String(localStorage.key(i))])
+                }
+            // other cases to be added later
+        }
     }
 
     async _getPacket(packet: peersy.Packet) {
@@ -42,5 +64,7 @@ export class Peer {
                 localStorage.setItem(`${packet.partOf}`, JSON.stringify(newContent))
             // other cases to be added later
         }
+
+        this.packets.push(packet)
     }
 }
