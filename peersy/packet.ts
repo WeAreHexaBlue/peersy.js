@@ -3,13 +3,13 @@ import * as crypto from "crypto"
 
 export class Packet {
     partOf: peersy.Content
-    index: number
+    index: {property: string, index: number}
     sender: peersy.Peer
     recipient?: peersy.Peer
     content?: string
     encContent?: Buffer
 
-    constructor(partOf: peersy.Content, index: number, sender: peersy.Peer, recipient?: peersy.Peer, content?: string) {
+    constructor(partOf: peersy.Content, index: {property: string, index: number}, sender: peersy.Peer, recipient?: peersy.Peer, content?: string) {
         this.partOf = partOf
         this.index = index
         this.sender = sender

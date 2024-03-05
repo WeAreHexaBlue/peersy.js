@@ -92,7 +92,7 @@ export class Peer {
                 let content = localStorage.getItem(`${packet.partOf}`)
                 let newContent: [peersy.Packet] = !content ? {} : JSON.parse(content) // if content is null, set newContent to {}, else to content
 
-                let currentPacket = newContent[packet.index]
+                let currentPacket = newContent[packet.index.property][packet.index.index]
 
                 if (!packet.encContent) {return}
 
