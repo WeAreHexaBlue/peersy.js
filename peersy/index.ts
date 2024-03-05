@@ -9,14 +9,12 @@ export var latestIDs: {[key: string]: number} = {
     packet: 0
 }
 
-export type Content = Post | Profile | Media // to be expanded
+export type Content = {id: number} & (Post | Profile | Media) // to be expanded
+export type Platform = "web" | "linux" | "windows" | "android" | "ios" // not sure if i have to separate Linux/Windows and Android/iOS
 
-export interface Media {
-    id: number
-}
+export interface Media {}
 
 export interface Post {
-    id: number
     title?: string,
     content?: string,
     attachments?: Media[],

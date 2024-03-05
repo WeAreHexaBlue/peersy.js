@@ -1,19 +1,27 @@
 import * as peersy from "./index"
+import * as crypto from "crypto"
 
 export class Packet {
-    id: number
     partOf: peersy.Content
+    index: number
     sender: peersy.Peer
-    recipient: peersy.Peer
-    content: string
+    recipient?: peersy.Peer
+    content?: string
+    encContent?: Buffer
 
-    constructor(partOf: peersy.Content, sender: peersy.Peer, recipient: peersy.Peer, content: string) {
-        this.id = peersy.latestIDs.packet + 1
+    constructor(partOf: peersy.Content, index: number, sender: peersy.Peer, recipient?: peersy.Peer, content?: string) {
         this.partOf = partOf
+        this.index = index
         this.sender = sender
         this.recipient = recipient
         this.content = content
+    }
 
-        peersy.latestIDs.packet = this.id
+    encrypt() {
+        if (!(this.recipient && this.content)) {return}
+
+        this.encContent = crypto.publicEncrypt(this.recipient.publicKey, Buffer.from(this.content))
+
+        this.content = undefined
     }
 }
