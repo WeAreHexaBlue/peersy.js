@@ -4,7 +4,7 @@ import * as crypto from "crypto"
 export class Peer {
     user: peersy.User
     client: peersy.Platform
-    packets: peersy.Packet[]
+    contentoids: {[id: number]: {[property: string]: peersy.Packet[]}}
     publicKey: string
     #privateKey: string
 
@@ -13,9 +13,9 @@ export class Peer {
     constructor(user: peersy.User, client: peersy.Platform) {
         this.user = user
         this.client = client
-        this.packets = []
+        this.contentoids = []
 
-        this.#findLocalPackets()
+        this.#findLocalContentoids()
 
         let {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {
             modulusLength: 2048,
@@ -54,12 +54,17 @@ export class Peer {
         })
 
         peersy.emitter.on("request", async (content: peersy.Content, requester: peersy.Peer) => {
-            this.packets.forEach(async packet => {
-                if (packet.partOf.id === content.id) {
-                    packet.recipient = requester
-                    await this.send(packet)
-                } 
-            })
+            for (let [contentoid, value] of Object.entries(this.contentoids)) {
+                if (Number(contentoid) !== content.id) {continue}
+
+                for (let [property, packets] of Object.entries(value)) {
+                    packets.forEach(async packet => {
+                        packet.recipient = requester
+                        packet.encrypt()
+                        await this.send(packet)
+                    })
+                }
+            }
         })
     }
 
@@ -76,11 +81,13 @@ export class Peer {
         peersy.emitter.emit("request", content, this)
     }
 
-    #findLocalPackets() { // to run inside constructor
+    #findLocalContentoids() { // to run inside constructor
         switch (this.client) {
-            case "web":
-                for (let i = 0; i < localStorage.length; i++) {
-                    this.packets.push(localStorage[String(localStorage.key(i))])
+            case peersy.Platform.web:
+                for (let key in localStorage) {
+                    if (peersy.unwantedStorageProperties.includes(key)) {continue}
+
+                    this.contentoids[key] = localStorage[key]
                 }
             // other cases to be added later
         }
@@ -88,7 +95,7 @@ export class Peer {
 
     async #getPacket(packet: peersy.Packet) {
         switch (this.client) {
-            case "web":
+            case peersy.Platform.web:
                 let content = localStorage.getItem(`${packet.partOf}`)
                 let newContent: [peersy.Packet] = !content ? {} : JSON.parse(content) // if content is null, set newContent to {}, else to content
 
@@ -96,9 +103,9 @@ export class Peer {
 
                 if (!packet.encContent) {return}
 
-                currentPacket.content = crypto.privateDecrypt(this.#privateKey, packet.encContent).toString("utf8")
-                currentPacket.encContent = undefined
-                this.packets.push(currentPacket)
+                packet.decrypt(this.#privateKey)
+
+                this.contentoids[packet.partOf.id][packet.index.property].push(packet)
         }
     }
 }

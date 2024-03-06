@@ -7,7 +7,7 @@ export class Packet {
     sender: peersy.Peer
     recipient?: peersy.Peer
     content?: string
-    encContent?: Buffer
+    encContent?: string
 
     constructor(partOf: peersy.Content, index: {property: string, index: number}, sender: peersy.Peer, recipient?: peersy.Peer, content?: string) {
         this.partOf = partOf
@@ -20,8 +20,16 @@ export class Packet {
     encrypt() {
         if (!(this.recipient && this.content)) {return}
 
-        this.encContent = crypto.publicEncrypt(this.recipient.publicKey, Buffer.from(this.content))
+        this.encContent = crypto.publicEncrypt(this.recipient.publicKey, Buffer.from(this.content)).toString("hex")
 
         this.content = undefined
+    }
+
+    decrypt(privateKey: string) {
+        if (!this.encContent) {return}
+
+        this.content = crypto.privateDecrypt(privateKey, Buffer.from(this.encContent)).toString("utf8")
+
+        this.encContent = undefined
     }
 }

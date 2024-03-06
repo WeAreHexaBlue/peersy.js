@@ -10,12 +10,15 @@ export var latestIDs: {[key: string]: number} = {
     packet: 0
 }
 
+export var unwantedStorageProperties: Array<string> = []
+
 export type Content = {id: number, length: number} & (Post | Profile | Comment | Media) // to be expanded
-export type Platform = "web" | "lnx" | "win" | "and" | "ios" // not sure if i have to separate Linux/Windows and Android/iOS
+export enum Platform {web, lnx, win, and, ios} // not sure if i have to separate Linux/Windows and Android/iOS
 
 export interface Media {
     format: string,
-    bytes: Buffer
+    bytes: Buffer,
+    author: User
 }
 
 export interface Comment {
@@ -33,23 +36,20 @@ export interface Post {
 }
 
 export interface Profile {
-    display: string,
+    display?: string,
     avatar?: Media,
     banner?: Media,
     bio?: string,
     pronouns?: string[],
-    user: User
+    author: User
 }
 
 export interface User {
     username: string
 }
 
-// to be done later am tired now !!!!!!
-function makeContentFromPackets(packets: Packet[]) {
-    let content: Content
-    let makingContent = {}
-}
+// lily can u do this one i think i will eat the world
+function makeContentFromPackets(wanted: Content, packets: Packet[]) {}
 
 export { Peer } from "./peer"
 export { Packet } from "./packet"
