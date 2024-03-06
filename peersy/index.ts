@@ -48,8 +48,8 @@ export interface User {
     username: string
 }
 
-// lily can u do this one i think i will eat the world
-function makeContentFromPackets(wanted: Content, packets: Packet[]) {}
+// lily can u make this pls :3
+function makeContentFromPackets(contentoid: {[property: string]: Packet[]}) {}
 
 export { Peer } from "./peer"
 export { Packet } from "./packet"
