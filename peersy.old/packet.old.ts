@@ -1,4 +1,4 @@
-import * as peersy from "./index"
+import * as peersy from "./index.old"
 import * as crypto from "crypto"
 
 export class Packet {
