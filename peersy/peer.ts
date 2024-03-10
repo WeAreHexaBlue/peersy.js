@@ -2,10 +2,10 @@ import * as peersy from "./index"
 import * as crypto from "crypto"
 
 export class Peer {
-    status?: peersy.Status
-    platform: peersy.Platform
     publicKey: string
     #privateKey: string
+
+    platform: peersy.Platform
 
     constructor(platform: peersy.Platform) {
         this.platform = platform
@@ -13,21 +13,20 @@ export class Peer {
         let {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {
             modulusLength: 2048,
             publicKeyEncoding: {
-                type: "pkcs1",
+                type: "spki",
                 format: "pem"
             },
             privateKeyEncoding: {
-                type: "pkcs1",
+                type: "pkcs8",
                 format: "pem"
             }
         })
 
-        this.publicKey = publicKey
-        this.#privateKey = privateKey
+        this.publicKey = peersy.keyStrip(publicKey, "PUBLIC")
+        this.#privateKey = peersy.keyStrip(privateKey, "PRIVATE")
     }
 
-    async request(id: number) {
-        this.status = peersy.Status.req
-        peersy.emitter.emit("req", this, ) // unfinished but i had to go
+    async request(contentID: number) {
+        peersy.emitter.emit("req", this, contentID)
     }
 }
