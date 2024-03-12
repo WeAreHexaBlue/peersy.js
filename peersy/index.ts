@@ -1,11 +1,22 @@
-import * as events from "node:events"
 import { Peer } from "./peer"
+import { Packet } from "./packet"
 
-export var emitter = new events.EventEmitter()
+export var network: string = "" // name of the network (ex.: "dibsy.app")
 
-export var connectedPeers: Peer[] = []
+export var connectedPeers: Peer[] = [] // array of currently connected peers
+export var blacklist: number[] = [] // array of content IDs to stop propagating
 
 export enum Platform {web, lnx, win, and, ios}
+
+export interface Content {
+    id: number,
+    data: string
+}
+
+export interface PartialContent {
+    id: number,
+    packets: Packet[]
+}
 
 export function keyStrip(key: string, type: "PUBLIC" | "PRIVATE"): string {
     const keyLines = key.split("\n")
@@ -17,3 +28,5 @@ export function keyStrip(key: string, type: "PUBLIC" | "PRIVATE"): string {
 }
 
 export { Peer } from "./peer"
+export { Packet } from "./packet"
+export { BlacklistedContent } from "./errors"
