@@ -1,5 +1,4 @@
 import { Peer } from "./peer"
-import { Packet } from "./packet"
 
 export var network: string = "" // name of the network (ex.: "dibsy.app")
 
@@ -13,6 +12,11 @@ export interface Content {
     data: string
 }
 
+export interface Packet {
+    index: number,
+    content: string
+}
+
 export interface PartialContent {
     id: number,
     length: number,
@@ -20,5 +24,4 @@ export interface PartialContent {
 }
 
 export { Peer } from "./peer"
-export { Packet } from "./packet"
 export { BlacklistedContent } from "./errors"

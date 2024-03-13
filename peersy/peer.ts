@@ -56,7 +56,7 @@ export class Peer {
 
             let packets: peersy.Packet[] = []
             contentChunks.forEach((chunk, index) => {
-                let packet = new peersy.Packet(index, chunk)
+                let packet: peersy.Packet = {index: index, content: chunk}
                 packets.push(packet)
             })
 
