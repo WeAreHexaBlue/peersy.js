@@ -52,13 +52,19 @@ export class Peer {
 
             if (!contentChunks) {return}
 
+            this.emitter.emit(`${magnet}:info`, contentChunks.length)
+
             let packets: peersy.Packet[] = []
             contentChunks.forEach((chunk, index) => {
                 let packet = new peersy.Packet(index, chunk)
                 packets.push(packet)
             })
 
-            this.emitter.emit(`${magnet}:found`)
+            packets.forEach(packet => {
+                this.emitter.emit(`${magnet}:send`, packet)
+            })
+
+            this.emitter.once(`${magnet}:get`, () => {})
         })
     }
 
@@ -68,7 +74,43 @@ export class Peer {
         }
 
         let magnet = crypto.randomBytes(8).toString("hex")
-        this.emitter.on(`${magnet}:found`, (packet: peersy.Packet) => {})
+
+        this.emitter.once(`${magnet}:info`, (length: number) => {
+            this.partialContent.push({
+                id: contentID,
+                length: length,
+                packets: []
+            })
+        })
+
+        this.emitter.on(`${magnet}:send`, (packet: peersy.Packet) => {
+            let contentAt = this.partialContent.findIndex(partialContent => {partialContent.id === contentID})
+
+            this.partialContent[contentAt].packets.push(packet)
+
+            if (this.partialContent[contentAt].packets.length === this.partialContent[contentAt].length) {
+                this.emitter.removeAllListeners(`${magnet}:send`)
+
+                let data: string
+
+                let decryptedPackets: peersy.Packet[] = []
+                this.partialContent[contentAt].packets.forEach((packet, index) => {
+                    packet.content = crypto.privateDecrypt(this.#privateKey, Buffer.from(packet.content, "base64url")).toString()
+                    decryptedPackets[index] = packet
+                })
+
+                data = decryptedPackets.join("")
+
+                this.content.push({
+                    id: contentID,
+                    data: data
+                })
+
+                this.partialContent.splice(contentAt, 1)
+
+                this.emitter.emit(`${magnet}:get`)
+            }
+        })
 
         this.emitter.emit("req", this, contentID, magnet)
     }

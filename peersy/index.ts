@@ -15,6 +15,7 @@ export interface Content {
 
 export interface PartialContent {
     id: number,
+    length: number,
     packets: Packet[]
 }
 
