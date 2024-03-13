@@ -18,15 +18,6 @@ export interface PartialContent {
     packets: Packet[]
 }
 
-export function keyStrip(key: string, type: "PUBLIC" | "PRIVATE"): string {
-    const keyLines = key.split("\n")
-
-    const begin = keyLines.indexOf(`-----BEGIN ${type} KEY-----`) + 1
-    const end = keyLines.indexOf(`-----END ${type} KEY-----`)
-
-    return keyLines.slice(begin, end).join("\n")
-}
-
 export { Peer } from "./peer"
 export { Packet } from "./packet"
 export { BlacklistedContent } from "./errors"

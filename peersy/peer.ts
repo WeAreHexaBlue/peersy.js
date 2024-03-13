@@ -30,20 +30,32 @@ export class Peer {
             }
         })
 
-        this.publicKey = peersy.keyStrip(publicKey, "PUBLIC")
-        this.#privateKey = peersy.keyStrip(privateKey, "PRIVATE")
+        this.publicKey = publicKey
+        this.#privateKey = privateKey
 
         this.#getLocalContent()
 
         peersy.connectedPeers.push(this)
 
         this.emitter.on("req", async (requester: peersy.Peer, contentID: number, magnet: string) => {
-            let wanted: peersy.Content
+            let wanted: peersy.Content | undefined
             this.content.forEach(content => {
                 if (content.id === contentID) {
                     wanted = content
                     return
                 }
+            })
+            if (!wanted) {return}
+
+            let encryptedContent: string = crypto.publicEncrypt(requester.publicKey, Buffer.from(wanted.data)).toString("base64url")
+            let contentChunks = encryptedContent.match(/.{1,40}/g)
+
+            if (!contentChunks) {return}
+
+            let packets: peersy.Packet[] = []
+            contentChunks.forEach((chunk, index) => {
+                let packet = new peersy.Packet(index, chunk)
+                packets.push(packet)
             })
 
             this.emitter.emit(`${magnet}:found`)
@@ -56,7 +68,7 @@ export class Peer {
         }
 
         let magnet = crypto.randomBytes(8).toString("hex")
-        this.emitter.on(`${magnet}:found`, (packet) => {})
+        this.emitter.on(`${magnet}:found`, (packet: peersy.Packet) => {})
 
         this.emitter.emit("req", this, contentID, magnet)
     }

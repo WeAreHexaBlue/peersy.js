@@ -1,8 +1,11 @@
-import * as peersy from "./index"
+import * as crypto from "crypto"
 
 export class Packet {
+    index: number
     content: string
-    encContent: string
 
-    constructor() {}
+    constructor(index: number, content: string) {
+        this.index = index
+        this.content = content
+    }
 }
