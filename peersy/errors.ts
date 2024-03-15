@@ -7,3 +7,11 @@ export class BlacklistedContent extends Error {
         this.message = `Content \`${contentID}\` is blacklisted on \`${peersy.network}\`.`
     }
 }
+
+export class CannotDisconnect extends Error {
+    constructor(message: string="") {
+        super(message)
+
+        this.message = "This peer may not disconnect yet."
+    }
+}

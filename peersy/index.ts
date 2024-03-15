@@ -1,4 +1,5 @@
 import { Peer } from "./peer"
+import { CannotDisconnect } from "./errors"
 
 export var network: string = "" // name of the network (ex.: "dibsy.app")
 
@@ -21,6 +22,23 @@ export interface PartialContent {
     id: number,
     length: number,
     packets: Packet[]
+}
+
+export function setNetwork(newNetwork: string) {
+    network = newNetwork
+}
+
+export function addToBlacklist(contentID: number) {
+    blacklist.push(contentID)
+}
+
+export function disconnectPeer(peer: Peer) {
+    if (peer.forbidDisconnect) {
+        throw CannotDisconnect
+    }
+
+    let peerAt = connectedPeers.findIndex(peer => peer === peer)
+    connectedPeers.splice(peerAt, 1)
 }
 
 export { Peer } from "./peer"
