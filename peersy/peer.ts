@@ -15,7 +15,7 @@ export class Peer {
 
     forbidDisconnect: boolean
 
-    constructor(platform: peersy.Platform) {
+    constructor(platform: peersy.Platform, content: peersy.Content[], partialContent: peersy.PartialContent[]=[]) {
         this.emitter = new events.EventEmitter()
 
         this.platform = platform
@@ -35,7 +35,8 @@ export class Peer {
         this.publicKey = publicKey
         this.#privateKey = privateKey
 
-        this.#getLocalContent()
+        this.content = content
+        this.partialContent = partialContent
 
         this.forbidDisconnect = false
 
@@ -65,12 +66,16 @@ export class Peer {
             })
 
             this.emitter.once(`${magnet}:ready`, () => {
+                this.forbidDisconnect = true
+
                 packets.forEach(packet => {
                     this.emitter.emit(`${magnet}:send`, packet)
                 })
             })
 
-            this.emitter.once(`${magnet}:get`, () => {})
+            this.emitter.once(`${magnet}:get`, () => {
+                this.forbidDisconnect = false
+            })
         })
 
         this.emitter.on("upload", (contentID: number, magnet: string) => {
@@ -206,11 +211,5 @@ export class Peer {
         })
 
         this.emitter.emit("upload", content.id, magnet)
-    }
-
-    #getLocalContent() {
-        let localContent = localStorage.getItem("content")
-
-        this.content = localContent ? JSON.parse(localContent) : [] // if localContent exists, this.content becomes the JSON parsed from localStorage's "content" property, else an empty array
     }
 }
