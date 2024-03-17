@@ -73,7 +73,7 @@ export class Peer {
                 })
             })
 
-            this.emitter.once(`${magnet}:get`, () => {
+            this.emitter.once(`${magnet}:finished`, () => {
                 this.forbidDisconnect = false
             })
         })
@@ -116,7 +116,7 @@ export class Peer {
 
                     this.partialContent.splice(contentAt, 1)
 
-                    this.emitter.emit(`${magnet}:get`)
+                    this.emitter.emit(`${magnet}:finished`)
                 }
             })
         })
@@ -164,7 +164,7 @@ export class Peer {
 
                 this.partialContent.splice(contentAt, 1)
 
-                this.emitter.emit(`${magnet}:get`)
+                this.emitter.emit(`${magnet}:finished`)
             }
         })
 
@@ -201,7 +201,7 @@ export class Peer {
                 })
             })
 
-            this.emitter.once(`${magnet}:get`, () => {
+            this.emitter.once(`${magnet}:finished`, () => {
                 transactions++
             })
 

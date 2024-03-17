@@ -1,8 +1,6 @@
 import { Peer } from "./peer"
 import { CannotDisconnect } from "./errors"
 
-export var network: string = "" // name of the network (ex.: "dibsy.app")
-
 export var connectedPeers: Peer[] = [] // array of currently connected peers
 export var blacklist: number[] = [] // array of content IDs to stop propagating
 
@@ -22,10 +20,6 @@ export interface PartialContent {
     id: number,
     length: number,
     packets: Packet[]
-}
-
-export function setNetwork(newNetwork: string) {
-    network = newNetwork
 }
 
 export function addToBlacklist(contentID: number) {
