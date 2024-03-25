@@ -36,7 +36,7 @@ export function disconnectPeer(peer: Peer) {
         throw CannotDisconnect
     }
 
-    let peerAt = connectedPeers.findIndex(peer => peer === peer)
+    let peerAt = connectedPeers.findIndex(thisPeer => thisPeer === peer)
     connectedPeers.splice(peerAt, 1)
 }
 
