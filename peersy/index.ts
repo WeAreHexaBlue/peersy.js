@@ -1,5 +1,5 @@
 import { Peer } from "./peer"
-import { CannotDisconnect, ChunkFailure } from "./errors"
+import { CannotDisconnect } from "./errors"
 import * as events from "node:events"
 import * as crypto from "crypto"
 
@@ -12,7 +12,8 @@ export enum Platform {web, lnx, win, and, ios}
 
 export interface Content {
     id: number,
-    data: string
+    data: string,
+    enc: string
 }
 
 export interface Packet {
@@ -39,40 +40,30 @@ export function disconnectPeer(peer: Peer) {
     connectedPeers.splice(peerAt, 1)
 }
 
-export async function packetize(content: Content, recipient: Peer): Promise<Packet[]> {
-    let encContent = crypto.publicEncrypt(recipient.publicKey, Buffer.from(content.data)).toString("base64url")
-    let contentChunks = encContent.match(/.{1,40}/g)
+export async function encrypt(content: Content, recipient: Peer): Promise<Content> {
+    let enc = crypto.publicEncrypt(recipient.publicKey, Buffer.from(content.data)).toString("base64url")
 
-    if (!contentChunks) {throw ChunkFailure}
+    content.data = ""
+    content.enc = enc
 
-    let packets: Packet[] = []
-    contentChunks.forEach((chunk, index) => {
-        packets.push({index: index, content: chunk})
-    })
-
-    return packets
+    return content
 }
 
-export async function find(contentID: number, requester: Peer): Promise<PartialContent | null> {
-    let content: PartialContent | null
+export async function find(contentID: number, requester: Peer): Promise<Content | null> {
+    let content: Content | null = null
 
-    let packets: Packet[] = []
     connectedPeers.forEach(peer => {
         peer.content.forEach(async content => {
             if (content.id === contentID) {
-                packets = await packetize(content, requester)
+                content = await encrypt(content, requester)
                 return
             }
         })
-        if (packets) {return}
+        if (content) {return}
     })
 
-    return packets.length ? {
-        id: contentID,
-        length: packets.length,
-        packets: packets
-    } : null
+    return content ? content : null
 }
 
 export { Peer } from "./peer"
-export { BlacklistedContent } from "./errors"
+export { BlacklistedContent, AlreadyDecrypted } from "./errors"

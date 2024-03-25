@@ -48,7 +48,14 @@ export class Peer {
         peersy.emitter.emit("request", contentID, this, magnet)
     }
 
-    async createPartialContent(contentID: number, length: number) {
-        //
+    async decrypt(content: peersy.Content): Promise<peersy.Content> {
+        if (content.data && !content.enc) {throw peersy.AlreadyDecrypted}
+
+        let data = crypto.privateDecrypt(this.#privateKey, Buffer.from(content.enc, "base64url")).toString("utf8")
+
+        content.data = data
+        content.enc = ""
+
+        return content
     }
 }

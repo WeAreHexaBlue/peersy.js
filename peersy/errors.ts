@@ -16,10 +16,10 @@ export class CannotDisconnect extends Error {
     }
 }
 
-export class ChunkFailure extends Error {
+export class AlreadyDecrypted extends Error {
     constructor(message: string="") {
         super(message)
 
-        this.message = "Content data packetization failed. If you see this error, God is real and they hate my code."
+        this.message = "This content has already been decrypted."
     }
 }
