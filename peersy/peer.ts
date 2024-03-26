@@ -8,11 +8,10 @@ export class Peer {
     platform: peersy.Platform
 
     content: peersy.Content[]
-    partialContent: peersy.PartialContent[]
 
     forbidDisconnect: boolean
 
-    constructor(platform: peersy.Platform, content: peersy.Content[]=[], partialContent: peersy.PartialContent[]=[]) {
+    constructor(platform: peersy.Platform, content: peersy.Content[]=[]) {
         this.platform = platform
 
         let {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {
@@ -31,7 +30,6 @@ export class Peer {
         this.#privateKey = privateKey
 
         this.content = content
-        this.partialContent = partialContent
 
         this.forbidDisconnect = false
 

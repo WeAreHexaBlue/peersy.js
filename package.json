@@ -1,6 +1,6 @@
 {
   "name": "peersy",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Node.js interface for the peersy protocol created by HexaBlue.",
   "main": "peersy/index.ts",
   "scripts": {

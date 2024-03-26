@@ -21,12 +21,6 @@ export interface Packet {
     content: string
 }
 
-export interface PartialContent {
-    id: number,
-    length: number,
-    packets: Packet[]
-}
-
 export function addToBlacklist(contentID: number) {
     blacklist.push(contentID)
 }
