@@ -3,8 +3,7 @@ import { CannotDisconnect } from "./errors"
 import * as events from "node:events"
 import * as crypto from "crypto"
 
-export var connectedPeers: Peer[] = [] // array of currently connected peers
-export var blacklist: number[] = [] // array of content IDs to stop propagating
+export var connectedPeers: Peer[] = []
 
 export var emitter: events.EventEmitter = new events.EventEmitter()
 
@@ -12,17 +11,22 @@ export enum Platform {web, lnx, win, and, ios}
 
 export interface Content {
     id: number,
-    data: string,
-    enc: string
+    length: number,
+    pieces: Piece[]
 }
 
-export interface Packet {
-    index: number,
-    content: string
+export interface Piece {
+    index: string,
+    data: string
 }
 
-export function addToBlacklist(contentID: number) {
-    blacklist.push(contentID)
+export interface IndexesToPeers {
+    [index: number]: Peer[]
+}
+
+export interface ExitStatus {
+    code: number,
+    message: string
 }
 
 export function disconnectPeer(peer: Peer) {
@@ -34,30 +38,39 @@ export function disconnectPeer(peer: Peer) {
     connectedPeers.splice(peerAt, 1)
 }
 
-export async function encrypt(content: Content, recipient: Peer): Promise<Content> {
-    let enc = crypto.publicEncrypt(recipient.publicKey, Buffer.from(content.data)).toString("base64url")
+export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers, exitStatus: ExitStatus}> {
+    let itp: IndexesToPeers = {}
 
-    content.data = ""
-    content.enc = enc
-
-    return content
-}
-
-export async function find(contentID: number, requester: Peer): Promise<Content | null> {
-    let content: Content | null = null
+    let expectedLength: number = 0
 
     connectedPeers.forEach(peer => {
-        peer.content.forEach(async content => {
+        peer.content.forEach(content => {
             if (content.id === contentID) {
-                content = await encrypt(content, requester)
-                return
+                if (!expectedLength) {
+                    expectedLength = content.length
+                }
+
+                content.pieces.forEach(piece => {
+                    itp[piece.index].push(peer)
+                })
             }
         })
-        if (content) {return}
     })
 
-    return content ? content : null
+    let foundPieces: number[] = []
+    Object.keys(itp).forEach(index => {
+        foundPieces.push(Number(index))
+    })
+
+    let exitStatus: ExitStatus
+    if (foundPieces.length === expectedLength) {
+        exitStatus = {code: 0, message: "Success."}
+    } else {
+        exitStatus = {code: 1, message: "Content only partially found."}
+    }
+
+    return {itp, exitStatus}
 }
 
 export { Peer } from "./peer"
-export { BlacklistedContent, AlreadyDecrypted } from "./errors"
+export { AlreadyDecrypted } from "./errors"

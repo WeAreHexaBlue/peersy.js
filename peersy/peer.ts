@@ -37,23 +37,8 @@ export class Peer {
     }
 
     async request(contentID: number) {
-        if (contentID in peersy.blacklist) {
-            throw peersy.BlacklistedContent
-        }
-
         let magnet = crypto.randomBytes(8).toString("base64url")
 
         peersy.emitter.emit("request", contentID, this, magnet)
-    }
-
-    async decrypt(content: peersy.Content): Promise<peersy.Content> {
-        if (content.data && !content.enc) {throw peersy.AlreadyDecrypted}
-
-        let data = crypto.privateDecrypt(this.#privateKey, Buffer.from(content.enc, "base64url")).toString("utf8")
-
-        content.data = data
-        content.enc = ""
-
-        return content
     }
 }
