@@ -41,4 +41,32 @@ export class Peer {
 
         peersy.emitter.emit("request", contentID, this, magnet)
     }
+
+    async seed(contentID: number, index: number, magnet: string) {
+        let content: peersy.Content | undefined
+        this.content.forEach(thisContent => {
+            if (thisContent.id === contentID) {
+                content = thisContent
+
+                return
+            }
+        })
+
+        if (!content) {return}
+
+        let piece: peersy.Piece | undefined
+        content.pieces.forEach(thisPiece => {
+            if (thisPiece.index === index) {
+                piece = thisPiece
+
+                return
+            }
+        })
+
+        if (!piece) {return}
+
+        // unfinished!
+
+        peersy.emitter.emit(`${magnet}:seed`)
+    }
 }

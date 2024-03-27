@@ -1,7 +1,6 @@
 import { Peer } from "./peer"
-import { CannotDisconnect } from "./errors"
+import * as errors from "./errors"
 import * as events from "node:events"
-import * as crypto from "crypto"
 
 export var connectedPeers: Peer[] = []
 
@@ -16,8 +15,9 @@ export interface Content {
 }
 
 export interface Piece {
-    index: string,
-    data: string
+    index: number,
+    data: string,
+    partOf: number // Content ID
 }
 
 export interface IndexesToPeers {
@@ -31,7 +31,7 @@ export interface ExitStatus {
 
 export function disconnectPeer(peer: Peer) {
     if (peer.forbidDisconnect) {
-        throw CannotDisconnect
+        throw errors.CannotDisconnect
     }
 
     let peerAt = connectedPeers.findIndex(thisPeer => thisPeer === peer)
@@ -53,6 +53,8 @@ export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers
                 content.pieces.forEach(piece => {
                     itp[piece.index].push(peer)
                 })
+
+                return
             }
         })
     })
@@ -73,4 +75,4 @@ export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers
 }
 
 export { Peer } from "./peer"
-export { AlreadyDecrypted } from "./errors"
+export * as errors from "./errors"
