@@ -17,6 +17,7 @@ export interface Content {
 export interface Piece {
     index: number,
     data: string,
+    enc: string,
     partOf: number // Content ID
 }
 
@@ -38,7 +39,7 @@ export function disconnectPeer(peer: Peer) {
     connectedPeers.splice(peerAt, 1)
 }
 
-export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers, exitStatus: ExitStatus}> {
+export async function findSeeds(contentID: number): Promise<{itp: IndexesToPeers, expectedLength: number, exitStatus: ExitStatus}> {
     let itp: IndexesToPeers = {}
 
     let expectedLength: number = 0
@@ -51,7 +52,9 @@ export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers
                 }
 
                 content.pieces.forEach(piece => {
-                    itp[piece.index].push(peer)
+                    if (!piece.enc) {
+                        itp[piece.index].push(peer)
+                    }
                 })
 
                 return
@@ -71,7 +74,7 @@ export async function findPeers(contentID: number): Promise<{itp: IndexesToPeers
         exitStatus = {code: 1, message: "Content only partially found."}
     }
 
-    return {itp, exitStatus}
+    return {itp, expectedLength, exitStatus}
 }
 
 export { Peer } from "./peer"

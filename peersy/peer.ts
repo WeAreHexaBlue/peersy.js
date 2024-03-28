@@ -39,10 +39,23 @@ export class Peer {
     async request(contentID: number) {
         let magnet = crypto.randomBytes(8).toString("base64url")
 
+        peersy.emitter.on(`${magnet}:seed`, async (piece: peersy.Piece) => {
+            if (piece.data) {return}
+
+            piece.data = crypto.privateDecrypt(this.#privateKey, Buffer.from(piece.enc, "base64url")).toString("utf8")
+            piece.enc = ""
+
+            this.content[piece.partOf].pieces.push(piece)
+
+            if (this.content[piece.partOf].pieces.length === this.content[piece.partOf].length) {
+                peersy.emitter.removeAllListeners(`${magnet}:seed`)
+            }
+        })
+
         peersy.emitter.emit("request", contentID, this, magnet)
     }
 
-    async seed(contentID: number, index: number, magnet: string) {
+    async seed(contentID: number, index: number, to: peersy.Peer, magnet: string) {
         let content: peersy.Content | undefined
         this.content.forEach(thisContent => {
             if (thisContent.id === contentID) {
@@ -65,8 +78,19 @@ export class Peer {
 
         if (!piece) {return}
 
-        // unfinished!
+        if (piece.enc) {return}
 
-        peersy.emitter.emit(`${magnet}:seed`)
+        piece.enc = crypto.publicEncrypt(to.publicKey, Buffer.from(piece.data)).toString("base64url")
+        piece.data = ""
+
+        peersy.emitter.emit(`${magnet}:seed`, piece)
+    }
+
+    createContent(contentID: number, expectedLength: number) {
+        this.content.push({
+            id: contentID,
+            length: expectedLength,
+            pieces: []
+        })
     }
 }
