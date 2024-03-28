@@ -55,6 +55,20 @@ export class Peer {
         peersy.emitter.emit("request", contentID, this, magnet)
     }
 
+    async upload(content: peersy.Content) {
+        let magnet = crypto.randomBytes(8).toString("base64url")
+
+        peersy.emitter.on(`${magnet}:leech`, async (requester: peersy.Peer) => {
+            content.pieces.forEach(async piece => {
+                piece = peersy.encrypt(piece, requester)
+
+                await this.seed(content.id, piece.index, requester, magnet)
+            })
+        })
+
+        peersy.emitter.emit("upload", content.id, content.length, magnet)
+    }
+
     async seed(contentID: number, index: number, to: peersy.Peer, magnet: string) {
         let content: peersy.Content | undefined
         this.content.forEach(thisContent => {
@@ -80,8 +94,7 @@ export class Peer {
 
         if (piece.enc) {return}
 
-        piece.enc = crypto.publicEncrypt(to.publicKey, Buffer.from(piece.data)).toString("base64url")
-        piece.data = ""
+        piece = peersy.encrypt(piece, to)
 
         peersy.emitter.emit(`${magnet}:seed`, piece)
     }

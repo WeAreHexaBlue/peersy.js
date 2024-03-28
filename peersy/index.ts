@@ -1,6 +1,7 @@
 import { Peer } from "./peer"
 import * as errors from "./errors"
 import * as events from "node:events"
+import * as crypto from "crypto"
 
 export var connectedPeers: Peer[] = []
 
@@ -37,6 +38,37 @@ export function disconnectPeer(peer: Peer) {
 
     let peerAt = connectedPeers.findIndex(thisPeer => thisPeer === peer)
     connectedPeers.splice(peerAt, 1)
+}
+
+export function makeContent(data: string, highestID: number): Content {
+    let chunks = data.match(/.{1,40}/g)
+
+    if (!chunks) {throw errors.ChunkFailure}
+
+    let pieces: Piece[] = []
+    chunks.forEach((chunk, index) => {
+        pieces.push({
+            index: index,
+            data: chunk,
+            enc: "",
+            partOf: highestID + 1
+        })
+    })
+
+    let content: Content = {
+        id: highestID + 1,
+        length: pieces.length,
+        pieces: pieces
+    }
+
+    return content
+}
+
+export function encrypt(piece: Piece, to: Peer): Piece {
+    piece.enc = crypto.publicEncrypt(to.publicKey, Buffer.from(piece.data)).toString("base64url")
+    piece.data = ""
+
+    return piece
 }
 
 export async function findSeeds(contentID: number): Promise<{itp: IndexesToPeers, expectedLength: number, exitStatus: ExitStatus}> {
