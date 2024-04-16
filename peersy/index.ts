@@ -10,7 +10,7 @@ export var emitter: events.EventEmitter = new events.EventEmitter()
 export enum Platform {web, lnx, win, and, ios}
 
 export interface Content {
-    id: number,
+    id: string,
     length: number,
     pieces: Piece[]
 }
@@ -19,7 +19,7 @@ export interface Piece {
     index: number,
     data: string,
     enc: string,
-    partOf: number // Content ID
+    partOf: string // Content ID
 }
 
 export interface IndexesToPeers {
@@ -40,8 +40,15 @@ export function disconnectPeer(peer: Peer) {
     connectedPeers.splice(peerAt, 1)
 }
 
-export function makeContent(data: string, highestID: number): Content {
-    let chunks = data.match(/.{1,40}/g)
+export function newID(): string {
+    return crypto.randomBytes(8).toString("base64")
+}
+
+export function makeContent(raw: Object): Content {
+    let id = newID()
+
+    let data = JSON.stringify(raw)
+    let chunks = data.match(/.{1,64}/g)
 
     if (!chunks) {throw errors.ChunkFailure}
 
@@ -51,12 +58,12 @@ export function makeContent(data: string, highestID: number): Content {
             index: index,
             data: chunk,
             enc: "",
-            partOf: highestID + 1
+            partOf: id
         })
     })
 
     let content: Content = {
-        id: highestID + 1,
+        id: id,
         length: pieces.length,
         pieces: pieces
     }
@@ -71,7 +78,7 @@ export function encrypt(piece: Piece, to: Peer): Piece {
     return piece
 }
 
-export async function findSeeds(contentID: number): Promise<{itp: IndexesToPeers, expectedLength: number, exitStatus: ExitStatus}> {
+export async function findSeeds(contentID: string): Promise<{itp: IndexesToPeers, expectedLength: number, exitStatus: ExitStatus}> {
     let itp: IndexesToPeers = {}
 
     let expectedLength: number = 0

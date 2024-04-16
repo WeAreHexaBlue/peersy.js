@@ -36,7 +36,7 @@ export class Peer {
         peersy.connectedPeers.push(this)
     }
 
-    async request(contentID: number) {
+    async request(contentID: string) {
         let magnet = crypto.randomBytes(8).toString("base64url")
 
         this.forbidDisconnect = true
@@ -74,7 +74,7 @@ export class Peer {
         peersy.emitter.emit("upload", content.id, content.length, magnet)
     }
 
-    async seed(contentID: number, index: number, to: peersy.Peer, magnet: string) {
+    async seed(contentID: string, index: number, to: peersy.Peer, magnet: string) {
         this.forbidDisconnect = true
 
         let content: peersy.Content | undefined
@@ -108,7 +108,7 @@ export class Peer {
         this.forbidDisconnect = false
     }
 
-    createContent(contentID: number, expectedLength: number) {
+    createContent(contentID: string, expectedLength: number) {
         this.content.push({
             id: contentID,
             length: expectedLength,
